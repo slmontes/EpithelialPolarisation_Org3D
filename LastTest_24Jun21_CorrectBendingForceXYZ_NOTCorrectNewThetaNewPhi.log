@@ -1,0 +1,59 @@
+Start testing: Jun 24 11:24 BST
+----------------------------------------------------------
+488/502 Testing: TestSpheroidWithPolarity
+488/502 Test: TestSpheroidWithPolarity
+Command: "/home/sandram/Builds/Chaste_2019_build/projects/EpithelialPolarisation/test/TestSpheroidWithPolarity"
+Directory: /home/sandram/Chaste_2019/
+"TestSpheroidWithPolarity" start time: Jun 24 11:24 BST
+Output:
+----------------------------------------------------------
+Running 5 tests
+
+ ***** TestSpheroidWithPolarity.hpp *****
+
+
+Entering TestNewForce
+Time step: 0.125
+Time: 0
+celli_theta: 0.793
+celli_phi: 0.073
+cellj_theta: 0.297
+cellj_phi: 0.658
+bending force x in celli: 0.213983
+bending force y in celli: -0.971063
+bending force z in celli: -1.80243
+rx: 0.369
+ry: -0.134
+rz: 0.116
+radius_of_cell_i: 0.5
+dij: 0.409357
+x force in celli: 0.566776
+y force in celli: -0.384492
+z force in celli: -0.195766
+New Theta celli: 0.83508
+New Phi celli: 0.0199221
+Theta cellj: 0.322282
+Phi cellj: 0.517598
+Counter: 2
+Passed
+Entering Test4NodeBasedWithBendingForcePolarisation
+Passed
+Entering TestNodeBasedWithBendingForcePolarisation
+Passed
+Entering TestSpheroid
+Passed
+Entering TestGhostNodesSpheroidSimulation3DandSave
+Passed
+OK!
+<end of output>
+Test time = 391.94 sec
+----------------------------------------------------------
+Test Passed.
+"TestSpheroidWithPolarity" end time: Jun 24 11:30 BST
+"TestSpheroidWithPolarity" time elapsed: 00:06:31
+----------------------------------------------------------
+
+End testing: Jun 24 11:30 BST
+
+Continuous_project_EpithelialPolarisation = 391.94 sec*proc
+

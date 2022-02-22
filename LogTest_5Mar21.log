@@ -1,0 +1,33 @@
+Start testing: Mar 05 19:17 GMT
+----------------------------------------------------------
+489/501 Testing: TestPolarisationOdeSystem
+489/501 Test: TestPolarisationOdeSystem
+Command: "/home/sandram/Builds/Chaste_2019_build/projects/EpithelialPolarisation/test/TestPolarisationOdeSystem"
+Directory: /home/sandram/Chaste_2019/
+"TestPolarisationOdeSystem" start time: Mar 05 19:17 GMT
+Output:
+----------------------------------------------------------
+Running 1 test
+
+ ***** TestPolarisationOdeSystem.hpp *****
+
+
+Entering TestPolarisationOdeSystemSetup
+1. Cvode for 10 hours time: 0.000102164s
+Number of solutions: 11
+Theta is: 0.339993
+Phi is: 0.430998
+Passed
+OK!
+<end of output>
+Test time =   0.20 sec
+----------------------------------------------------------
+Test Passed.
+"TestPolarisationOdeSystem" end time: Mar 05 19:17 GMT
+"TestPolarisationOdeSystem" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Mar 05 19:17 GMT
+
+Continuous_project_EpithelialPolarisation =   0.20 sec*proc
+
