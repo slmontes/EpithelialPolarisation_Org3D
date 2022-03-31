@@ -320,46 +320,67 @@ std::pair<double, double> EpithelialLayerPolarisationForce<SPACE_DIM>::pt_to_pol
                      // Get the radius of this cell
                      double radius_of_cell_j = p_node_j->GetRadius();
 
+
                      // Get the unit vector parallel to the line joining the two nodes (assuming no periodicities etc.)
                        c_vector<double, SPACE_DIM> unit_vector = r_node_i_location - r_node_j_location;
 
                      // Calculate the distance between the two nodes
                      double dij = norm_2(unit_vector);
 
-                     c_vector<double, 3> force;
 
-                     if (dij < radius_of_cell_i + radius_of_cell_j) //Which is the same as dij < 1
-                                                                    //(dij <= r_max) if (dist > r_max) return dF;
-                     {
+                    c_vector<double, 3> force;
 
-                      auto F = fmax(0.7 - dij, 0) * 2 - fmax(dij - 0.8, 0)/2;
-                      // auto F = fmax(0.8 - dij, 0) * 1.0 - fmax(dij - 0.8, 0) * 1.0;
+                    if (dij < radius_of_cell_i + radius_of_cell_j) //Which is the same as dij < 1
+                                                                   //(dij <= r_max) if (dist > r_max) return dF;
+                    {
+                      double pol_dir_ij = pol_dot_product(celli_theta, celli_phi, cellj_theta, cellj_phi);
 
+                      if (pol_dir_ij>0)
+                      {
 
-                       force[0] = unit_vector[0] * F / dij;
-                       force[1] = unit_vector[1] * F / dij;
-                       force[2] = unit_vector[2] * F / dij;
+                       // auto F = fmax(0.65 - dij, 0) * 3 - fmax(dij - 0.75, 0)/4;
+                       // auto F = fmax(0.7 - dij, 0) * 1.0 - fmax(dij - 0.8, 0) / 2.0;
+                       // auto F = fmax(0.6 - dij, 0) * 2 - fmax(dij - 0.7, 0) /2;
+                       // auto F = fmax(0.7 - dij, 0) * 3 - fmax(dij - 0.9, 0) * 2;  //ALMOST WORKING , just one HOLe
+                       auto F = fmax(0.7 - dij, 0) * 3 - fmax(dij - 0.9, 0) * 3;
 
-                       force += bending_force(celli,celli_theta,celli_phi,cellj_theta,cellj_phi,unit_vector,dij)*0.3;//*0.3;
+                        force[0] = unit_vector[0] * F / dij;
+                        force[1] = unit_vector[1] * F / dij;
+                        force[2] = unit_vector[2] * F / dij;
 
-                     }
+                        force += bending_force(celli,celli_theta,celli_phi,cellj_theta,cellj_phi,unit_vector,dij)*0.2;//*0.3;
 
-                     else
-                     {
-                       force[0] = 0;
-                       force[1] = 0;
-                       force[2] = 0;
-                     }
+                      }
+                      else
+                      {
+                        //Can we do something similar to repulsion force?
+                        c_vector<double, 3> pol_vec = pol_to_cvector(celli_theta, celli_phi);
 
-                        // p_node_i->ClearAppliedForce();
-                        p_node_i->AddAppliedForceContribution(force);
-                    }
-                    }
+                        auto F = 1; //fmax(0.7 - dij, 0)/2 - fmax(dij - 0.8, 0)*2;
+                        // auto F = fmax(0.8 - dij, 0) * 1.0 - fmax(dij - 0.8, 0) * 1.0;
+
+                         force[0] = pol_vec[0] * F / dij;
+                         force[1] = pol_vec[1] * F / dij;
+                         force[2] = pol_vec[2] * F / dij;
+
+                      }
+
                   }
 
-            }
+                  else
+                  {
+                    force[0] = 0;
+                    force[1] = 0;
+                    force[2] = 0;
+                  }
 
-    }
+                     // p_node_i->ClearAppliedForce();
+                     p_node_i->AddAppliedForceContribution(force);
+                  }
+                }
+              }
+            }
+}
 
 template<unsigned SPACE_DIM>
 void EpithelialLayerPolarisationForce<SPACE_DIM>::OutputForceParameters(out_stream& rParamsFile)

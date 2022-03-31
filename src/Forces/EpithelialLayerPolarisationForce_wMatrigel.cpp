@@ -336,7 +336,7 @@ std::pair<double, double> EpithelialLayerPolarisationForce_wMatrigel<SPACE_DIM>:
                        if (pol_dir_ij>0)
                        {
 
-                        auto F = fmax(0.7 - dij, 0) * 2 - fmax(dij - 0.8, 0)/2;
+                        auto F = fmax(0.8 - dij, 0) * 2 - fmax(dij - 0.8, 0)/2;
                         // auto F = fmax(0.8 - dij, 0) * 1.0 - fmax(dij - 0.8, 0) * 1.0;
 
 
@@ -349,6 +349,7 @@ std::pair<double, double> EpithelialLayerPolarisationForce_wMatrigel<SPACE_DIM>:
                        }
                        else
                        {
+                         //Can we do something similar to repulsion force?
                          c_vector<double, 3> pol_vec = pol_to_cvector(celli_theta, celli_phi);
 
                          auto F = 1; //fmax(0.7 - dij, 0)/2 - fmax(dij - 0.8, 0)*2;

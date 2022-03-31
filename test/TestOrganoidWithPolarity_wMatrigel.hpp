@@ -60,6 +60,7 @@
 #include "CellMutationStatesCountWriter.hpp"
 #include "CellProliferativePhasesCountWriter.hpp"
 #include "CellProliferativeTypesCountWriter.hpp"
+#include "CellPolarityWriter.hpp"
 
 /*
  * The next header defines the simulation class modifier that includes the functionality
@@ -111,10 +112,6 @@ public:
 
            double totalPoints = 31;
 
-           // double dist_to_nb = 0.75;
-           // // auto r_max = pow((totalPoints) / 0.64, 1. / 3) * dist_to_nb / 2;
-           // auto r_max = pow((totalPoints) / 0.9, 1. / 3) * dist_to_nb / 2;
-
            std::vector<double> linspaced;
 
            double startj = 1 - 1.0 / totalPoints;
@@ -128,14 +125,6 @@ public:
            linspaced.push_back(endj);
 
              for (auto i=0; i<totalPoints; i++){
-               // auto r = r_max * pow(rand() / (RAND_MAX + 1.), 1. / 3);
-               // auto theta = acos(2. * rand() / (RAND_MAX + 1.) - 1);
-               // auto phi = rand() / (RAND_MAX + 1.) * 2 * M_PI;
-               // points.h_X[i].x = r * sin(theta) * cos(phi);
-               // points.h_X[i].y = r * sin(theta) * sin(phi);
-               // points.h_X[i].z = r * cos(theta);
-
-               // double r_max = 0.5;
 
                 double golden_angle = M_PI * (3 - sqrt(5));
                 double theta = golden_angle * i;
@@ -192,6 +181,9 @@ public:
            */
            // NodeBasedCellPopulation<3> cell_population(mesh, cells);
 
+           /* COMMENT FOR NOW
+           To test if cell cycle break symetry!!!
+           */
            for (auto i=0; i<mesh.GetNumNodes(); i++)
           {
             //Set cell cycle
@@ -223,21 +215,25 @@ public:
              //Randomly generate number
              double random_number = RandomNumberGenerator::Instance()->ranf();
 
-             if(random_number < init_paneth_proportion) //Assign cells to be Paneth with 1 - target_proportion
-              {
-                p_cell_ib->SetMutationState(p_paneth_state); //Set the cell to be paneth cell
-                num_paneth.push_back(1);
-              }
-              else if (random_number < (init_paneth_proportion+init_stem_proportion))
-              {
-                p_cell_ib->SetCellProliferativeType(p_stem_type); //Set the cell to be stem cell
-                num_SC.push_back(1);
-              }
-              else
-              {
+             /*COMMENT FOR NOW
+             To test if cell cycle break symetry!!!
+             */
+
+             // if(random_number < init_paneth_proportion) //Assign cells to be Paneth with 1 - target_proportion
+             //  {
+             //    p_cell_ib->SetMutationState(p_paneth_state); //Set the cell to be paneth cell
+             //    num_paneth.push_back(1);
+             //  }
+             //  else if (random_number < (init_paneth_proportion+init_stem_proportion))
+             //  {
+                // p_cell_ib->SetCellProliferativeType(p_stem_type); //Set the cell to be stem cell
+                // num_SC.push_back(1);
+              // }
+              // else
+              // {
                 p_cell_ib->SetMutationState(p_TA_state); //Set the cell to be TA cell
                 num_TA.push_back(1);
-              }
+              // }
 
             c_vector<double, 3> cell_location = cell_population.GetLocationOfCellCentre(p_cell_ib);
 
@@ -267,9 +263,11 @@ public:
           cell_population.AddCellWriter<CellIdWriter>();
           cell_population.AddCellPopulationCountWriter<CellProliferativePhasesCountWriter>();
           cell_population.AddCellWriter<CellAgesWriter>();
+          cell_population.AddCellWriter<CellPolarityWriter>();
 
           OffLatticeSimulation<3> simulator(cell_population);
-          simulator.SetOutputDirectory("TestOrganoidWithPolMatrigel_Organoid_PCStiff_4_SCandTAStiff_1_bendingForceTimes0.3_100hr_x10");
+          simulator.SetOutputDirectory("TestOrganoidWithPolMatrigel_Organoid_OnlyTAS_bendingForcex0.2_100hr_0.0Spring_0.7x3and0.9x3Dist");
+          //PASTname:"TestOrganoidWithPolMatrigel_Organoid_PCStiff_1_SCandTAStiff_1_bendingForcexSpring_100hr_0.0Spring_OverlapDist"
 
           double dt = 0.005; //Set dt
           double sampling_timestep = 0.5/dt;//4800; //Set sampling timestep
@@ -280,25 +278,27 @@ public:
           simulator.SetEndTime(end_time); //Set the number of hours to run the simulation to
 
           /* As we are using a node-based cell population, we use an appropriate force law. */
-          MAKE_PTR(EpithelialLayerPolarisationForce_wMatrigel<3>, p_force);
+          MAKE_PTR(EpithelialLayerPolarisationForce<3>, p_force);
           simulator.AddForce(p_force);
+          // MAKE_PTR(EpithelialLayerPolarisationForce_wMatrigel<3>, p_force);
+          // simulator.AddForce(p_force);
 
-          MAKE_PTR(EpithelialLayerLinearSpringForce<3>, p_spring_force);
-          p_spring_force->SetCutOffLength(1.0);
-
-          //Set all the spring stiffness variables
-      		double epithelial_epithelial_stiffness = 1.0; //Epithelial-epithelial spring connections
-      		double epithelial_nonepithelial_stiffness = 15.0; //Epithelial-non-epithelial spring connections
-      		double nonepithelial_nonepithelial_stiffness = 15.0; //Non-epithelial-non-epithelial spring connections
-          double stiffness_ratio_paneth = 4.0;
-          double stiffness_ratio_TA = 1.0;
-          //Set the spring stiffnesses
-          p_spring_force->SetEpithelialEpithelialSpringStiffness(epithelial_epithelial_stiffness);
-          p_spring_force->SetEpithelialNonepithelialSpringStiffness(epithelial_nonepithelial_stiffness);
-          p_spring_force->SetNonepithelialNonepithelialSpringStiffness(nonepithelial_nonepithelial_stiffness);
-          p_spring_force->SetPanethCellStiffnessRatio(stiffness_ratio_paneth);
-          p_spring_force->SetTACellStiffnessRatio(stiffness_ratio_TA);
-          simulator.AddForce(p_spring_force);
+          // MAKE_PTR(EpithelialLayerLinearSpringForce<3>, p_spring_force);
+          // p_spring_force->SetCutOffLength(1.5);
+          //
+          // //Set all the spring stiffness variables
+      		// double epithelial_epithelial_stiffness = 0.0;//1.0; //Epithelial-epithelial spring connections
+      		// double epithelial_nonepithelial_stiffness = 0.0; //Epithelial-non-epithelial spring connections
+      		// double nonepithelial_nonepithelial_stiffness = 0.0; //Non-epithelial-non-epithelial spring connections
+          // double stiffness_ratio_paneth = 0.0;//1.0;
+          // double stiffness_ratio_TA = 0.0;//1.0;
+          // //Set the spring stiffnesses
+          // p_spring_force->SetEpithelialEpithelialSpringStiffness(epithelial_epithelial_stiffness);
+          // p_spring_force->SetEpithelialNonepithelialSpringStiffness(epithelial_nonepithelial_stiffness);
+          // p_spring_force->SetNonepithelialNonepithelialSpringStiffness(nonepithelial_nonepithelial_stiffness);
+          // p_spring_force->SetPanethCellStiffnessRatio(stiffness_ratio_paneth);
+          // p_spring_force->SetTACellStiffnessRatio(stiffness_ratio_TA);
+          // simulator.AddForce(p_spring_force);
 
           // Add tracking modifier - we don't have it at this point
           MAKE_PTR(PolarisationTrackingModifier_bending<3>, p_modifier);
