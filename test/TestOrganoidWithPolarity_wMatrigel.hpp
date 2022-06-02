@@ -163,6 +163,10 @@ public:
           // CellsGenerator<StochasticTargetProportionBasedCellCycleModelSandra, 3> cells_generator;
           // cells_generator.GenerateBasicRandom(cells, mesh.GetNumNodes(), p_stem_type);
 
+          double dt = 0.005; //Set dt
+          double sampling_timestep = 0.5/dt;//4800; //Set sampling timestep
+      		double end_time = 110;//168; //Set end time (168hrs is 7days) ... This can be changed
+
           double target_proportion = 0.8; // + 0.05*tpropn;
           double target_proportion_for_mutants = 0.9;
           double cc_scale = 1.0;
@@ -170,6 +174,62 @@ public:
           double init_stem_proportion = 0.42;
           double init_paneth_proportion = 0.09;
           double init_TA_proportion = 0.49;
+
+          //Set all the spring stiffness variables
+      		double epithelial_epithelial_stiffness = 1.0;//1.0; //Epithelial-epithelial spring connections
+      		double epithelial_nonepithelial_stiffness = 0.0; //Epithelial-non-epithelial spring connections
+      		double nonepithelial_nonepithelial_stiffness = 0.0; //Non-epithelial-non-epithelial spring connections
+          double stiffness_ratio_paneth = 1.0;//1.0;
+          double stiffness_ratio_TA = 1.0;//1.0;
+          double stiffness_ratio_EC = 1.0;
+
+          //To add parameter values to string names:
+          // Set output directory
+
+  				// Create an output string stream for each parameter that we want to change
+  				std::ostringstream tp_obj;
+  				std::ostringstream tpm_obj;
+  				std::ostringstream sr_paneth_obj;
+  				std::ostringstream sr_TA_obj;
+  				std::ostringstream sr_EC_obj;
+  				std::ostringstream ccs_obj;
+          std::ostringstream endt_obj;
+
+  				// Set Fixed -Point Notation
+  				tp_obj << std::fixed;
+  				tpm_obj << std::fixed;
+  				sr_paneth_obj << std::fixed;
+  				sr_TA_obj << std::fixed;
+  				sr_EC_obj << std::fixed;
+  				ccs_obj << std::fixed;
+          endt_obj << std::fixed;
+
+  				// Set precision to 2 digits
+  				tp_obj << std::setprecision(1);
+  				tpm_obj << std::setprecision(1);
+  				sr_paneth_obj << std::setprecision(1);
+  				sr_TA_obj << std::setprecision(1);
+  				sr_EC_obj << std::setprecision(1);
+  				ccs_obj << std::setprecision(1);
+          endt_obj << std::setprecision(1);
+
+  				//Add number to stream
+  				tp_obj << target_proportion;//target_stem_proportion;
+  				tpm_obj << target_proportion_for_mutants; //target_TA_proportion;
+  				sr_paneth_obj << stiffness_ratio_paneth;
+  				sr_TA_obj << stiffness_ratio_TA;
+  				sr_EC_obj << stiffness_ratio_EC;
+  				ccs_obj << cc_scale;
+          endt_obj << end_time;
+
+  				// Get string from output string stream
+  				std::string tp = tp_obj.str();
+  				std::string tpm = tpm_obj.str();
+  				std::string sr_PC = sr_paneth_obj.str();
+  				std::string sr_TA = sr_TA_obj.str();
+  				std::string sr_EC = sr_EC_obj.str();
+  				std::string ccs = ccs_obj.str();
+          std::string endt = endt_obj.str();
 
            std::vector<unsigned> num_paneth;
            std::vector<unsigned> num_TA;
@@ -266,39 +326,30 @@ public:
           cell_population.AddCellWriter<CellPolarityWriter>();
 
           OffLatticeSimulation<3> simulator(cell_population);
-          simulator.SetOutputDirectory("TestOrganoidWithPolMatrigel_Organoid_OnlyTAS_bendingForcex0.2_100hr_0.0Spring_0.7x3and0.9x3Dist");
+          simulator.SetOutputDirectory("TestOrganoidWithPolMatrigel_Organoid_3CT_bendingForcex0.3_100hr_1.0Spring_0.7x2and0.8x1Dist");
+          // simulator.SetOutputDirectory("TestOrganoidWithPolMatrigel_4CT_Organoid_PCandECStiff_"+sr_PC+"_SCandTAStiff_"+sr_TA+"_bendingForceTimes0.2_"+endt+"hrs")
           //PASTname:"TestOrganoidWithPolMatrigel_Organoid_PCStiff_1_SCandTAStiff_1_bendingForcexSpring_100hr_0.0Spring_OverlapDist"
-
-          double dt = 0.005; //Set dt
-          double sampling_timestep = 0.5/dt;//4800; //Set sampling timestep
-      		double end_time = 110;//168; //Set end time (168hrs is 7days) ... This can be changed
 
           simulator.SetDt(dt); //Set the timestep dt for force volution
           simulator.SetSamplingTimestepMultiple(sampling_timestep); //Set the sampling timestep multiple for animations
           simulator.SetEndTime(end_time); //Set the number of hours to run the simulation to
 
           /* As we are using a node-based cell population, we use an appropriate force law. */
-          MAKE_PTR(EpithelialLayerPolarisationForce<3>, p_force);
-          simulator.AddForce(p_force);
-          // MAKE_PTR(EpithelialLayerPolarisationForce_wMatrigel<3>, p_force);
+          // MAKE_PTR(EpithelialLayerPolarisationForce<3>, p_force);
           // simulator.AddForce(p_force);
+          MAKE_PTR(EpithelialLayerPolarisationForce_wMatrigel<3>, p_force);
+          simulator.AddForce(p_force);
 
-          // MAKE_PTR(EpithelialLayerLinearSpringForce<3>, p_spring_force);
-          // p_spring_force->SetCutOffLength(1.5);
-          //
-          // //Set all the spring stiffness variables
-      		// double epithelial_epithelial_stiffness = 0.0;//1.0; //Epithelial-epithelial spring connections
-      		// double epithelial_nonepithelial_stiffness = 0.0; //Epithelial-non-epithelial spring connections
-      		// double nonepithelial_nonepithelial_stiffness = 0.0; //Non-epithelial-non-epithelial spring connections
-          // double stiffness_ratio_paneth = 0.0;//1.0;
-          // double stiffness_ratio_TA = 0.0;//1.0;
-          // //Set the spring stiffnesses
-          // p_spring_force->SetEpithelialEpithelialSpringStiffness(epithelial_epithelial_stiffness);
-          // p_spring_force->SetEpithelialNonepithelialSpringStiffness(epithelial_nonepithelial_stiffness);
-          // p_spring_force->SetNonepithelialNonepithelialSpringStiffness(nonepithelial_nonepithelial_stiffness);
-          // p_spring_force->SetPanethCellStiffnessRatio(stiffness_ratio_paneth);
-          // p_spring_force->SetTACellStiffnessRatio(stiffness_ratio_TA);
-          // simulator.AddForce(p_spring_force);
+          MAKE_PTR(EpithelialLayerLinearSpringForce<3>, p_spring_force);
+          p_spring_force->SetCutOffLength(1.0);
+
+          //Set the spring stiffnesses
+          p_spring_force->SetEpithelialEpithelialSpringStiffness(epithelial_epithelial_stiffness);
+          p_spring_force->SetEpithelialNonepithelialSpringStiffness(epithelial_nonepithelial_stiffness);
+          p_spring_force->SetNonepithelialNonepithelialSpringStiffness(nonepithelial_nonepithelial_stiffness);
+          p_spring_force->SetPanethCellStiffnessRatio(stiffness_ratio_paneth);
+          p_spring_force->SetTACellStiffnessRatio(stiffness_ratio_TA);
+          simulator.AddForce(p_spring_force);
 
           // Add tracking modifier - we don't have it at this point
           MAKE_PTR(PolarisationTrackingModifier_bending<3>, p_modifier);

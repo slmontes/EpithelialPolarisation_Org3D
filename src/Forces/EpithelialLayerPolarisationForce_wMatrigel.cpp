@@ -336,7 +336,7 @@ std::pair<double, double> EpithelialLayerPolarisationForce_wMatrigel<SPACE_DIM>:
                        if (pol_dir_ij>0)
                        {
 
-                        auto F = fmax(0.8 - dij, 0) * 2 - fmax(dij - 0.8, 0)/2;
+                        auto F = fmax(0.7 - dij, 0) * 2 - fmax(dij - 0.8, 0)*1;
                         // auto F = fmax(0.8 - dij, 0) * 1.0 - fmax(dij - 0.8, 0) * 1.0;
 
 
