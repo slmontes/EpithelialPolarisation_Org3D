@@ -40,6 +40,7 @@
 #include "UniformG1GenerationalCellCycleModel.hpp"
 #include "OffLatticeSimulation.hpp"  //Simulates the evolution of the population
 #include "StochasticTargetProportionBasedCellCycleModelSandra.hpp"
+#include "StochasticTargetProportionBasedCellCycleModel_4CellTypes.hpp"
 
 /*
  * Cell types headers
@@ -77,6 +78,7 @@
 #include "EpithelialLayerPolarisationForce.hpp" //Force affected by the polarisation vector of each cell.
 #include "EpithelialLayerLinearSpringForce.hpp"
 #include "EpithelialLayerPolarisationForce_wMatrigel.hpp"
+#include "EpithelialLayerLinearSpringForce_4CellTypes.hpp"
 
 /*
  * Cell killer
@@ -149,7 +151,7 @@ public:
              }
 
            NodesOnlyMesh<3> mesh;
-           mesh.ConstructNodesWithoutMesh(nodes, 1.0); // Distance cut-off usually 1.5
+           mesh.ConstructNodesWithoutMesh(nodes, 1.5); // Distance cut-off usually 1.5
 
            std::vector<CellPtr> cells;
            // MAKE_PTR(DifferentiatedCellProliferativeType, p_diff_type);   //%%%%%%%THIS IS TO PREVENT CELL DIVISION!!!!
@@ -165,7 +167,7 @@ public:
 
           double dt = 0.005; //Set dt
           double sampling_timestep = 0.5/dt;//4800; //Set sampling timestep
-      		double end_time = 110;//168; //Set end time (168hrs is 7days) ... This can be changed
+      		double end_time = 100;//168; //Set end time (168hrs is 7days) ... This can be changed
 
           double target_proportion = 0.8; // + 0.05*tpropn;
           double target_proportion_for_mutants = 0.9;
@@ -247,7 +249,7 @@ public:
            for (auto i=0; i<mesh.GetNumNodes(); i++)
           {
             //Set cell cycle
-             StochasticTargetProportionBasedCellCycleModelSandra* p_cycle_model = new StochasticTargetProportionBasedCellCycleModelSandra();
+             StochasticTargetProportionBasedCellCycleModel_4CellTypes* p_cycle_model = new StochasticTargetProportionBasedCellCycleModel_4CellTypes();
              p_cycle_model->SetCellCycleLengthScale(cc_scale);
 
              //To avoid a 'pulsing' behaviour with birth events, we set each cell's initial age to be
@@ -279,21 +281,21 @@ public:
              To test if cell cycle break symetry!!!
              */
 
-             // if(random_number < init_paneth_proportion) //Assign cells to be Paneth with 1 - target_proportion
-             //  {
-             //    p_cell_ib->SetMutationState(p_paneth_state); //Set the cell to be paneth cell
-             //    num_paneth.push_back(1);
-             //  }
-             //  else if (random_number < (init_paneth_proportion+init_stem_proportion))
-             //  {
-                // p_cell_ib->SetCellProliferativeType(p_stem_type); //Set the cell to be stem cell
-                // num_SC.push_back(1);
-              // }
-              // else
-              // {
+             if(random_number < init_paneth_proportion) //Assign cells to be Paneth with 1 - target_proportion
+              {
+                p_cell_ib->SetMutationState(p_paneth_state); //Set the cell to be paneth cell
+                num_paneth.push_back(1);
+              }
+              else if (random_number < (init_paneth_proportion+init_stem_proportion))
+              {
+                p_cell_ib->SetCellProliferativeType(p_stem_type); //Set the cell to be stem cell
+                num_SC.push_back(1);
+              }
+              else
+              {
                 p_cell_ib->SetMutationState(p_TA_state); //Set the cell to be TA cell
                 num_TA.push_back(1);
-              // }
+              }
 
             c_vector<double, 3> cell_location = cell_population.GetLocationOfCellCentre(p_cell_ib);
 
@@ -326,7 +328,7 @@ public:
           cell_population.AddCellWriter<CellPolarityWriter>();
 
           OffLatticeSimulation<3> simulator(cell_population);
-          simulator.SetOutputDirectory("TestOrganoidWithPolMatrigel_Organoid_3CT_bendingForcex0.3_100hr_1.0Spring_0.7x2and0.8x1Dist");
+          simulator.SetOutputDirectory("TestOrganoidwPolMat_Org_4CT_PCandECStiff_"+sr_PC+"_SCandTAStiff_"+sr_TA+"_bendingForceTimes0.3_"+endt+"hrs");
           // simulator.SetOutputDirectory("TestOrganoidWithPolMatrigel_4CT_Organoid_PCandECStiff_"+sr_PC+"_SCandTAStiff_"+sr_TA+"_bendingForceTimes0.2_"+endt+"hrs")
           //PASTname:"TestOrganoidWithPolMatrigel_Organoid_PCStiff_1_SCandTAStiff_1_bendingForcexSpring_100hr_0.0Spring_OverlapDist"
 
@@ -340,15 +342,26 @@ public:
           MAKE_PTR(EpithelialLayerPolarisationForce_wMatrigel<3>, p_force);
           simulator.AddForce(p_force);
 
-          MAKE_PTR(EpithelialLayerLinearSpringForce<3>, p_spring_force);
-          p_spring_force->SetCutOffLength(1.0);
+          // MAKE_PTR(EpithelialLayerLinearSpringForce<3>, p_spring_force);
+          // p_spring_force->SetCutOffLength(1.0);
+          //
+          // //Set the spring stiffnesses
+          // p_spring_force->SetEpithelialEpithelialSpringStiffness(epithelial_epithelial_stiffness);
+          // p_spring_force->SetEpithelialNonepithelialSpringStiffness(epithelial_nonepithelial_stiffness);
+          // p_spring_force->SetNonepithelialNonepithelialSpringStiffness(nonepithelial_nonepithelial_stiffness);
+          // p_spring_force->SetPanethCellStiffnessRatio(stiffness_ratio_paneth);
+          // p_spring_force->SetTACellStiffnessRatio(stiffness_ratio_TA);
+          // simulator.AddForce(p_spring_force);
 
+          MAKE_PTR(EpithelialLayerLinearSpringForce_4CellTypes<3>, p_spring_force);
+          p_spring_force->SetCutOffLength(1.5);
           //Set the spring stiffnesses
           p_spring_force->SetEpithelialEpithelialSpringStiffness(epithelial_epithelial_stiffness);
           p_spring_force->SetEpithelialNonepithelialSpringStiffness(epithelial_nonepithelial_stiffness);
           p_spring_force->SetNonepithelialNonepithelialSpringStiffness(nonepithelial_nonepithelial_stiffness);
           p_spring_force->SetPanethCellStiffnessRatio(stiffness_ratio_paneth);
           p_spring_force->SetTACellStiffnessRatio(stiffness_ratio_TA);
+          p_spring_force->SetECCellStiffnessRatio(stiffness_ratio_EC);
           simulator.AddForce(p_spring_force);
 
           // Add tracking modifier - we don't have it at this point
